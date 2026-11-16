@@ -12,6 +12,8 @@ from http.client import InvalidURL
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from http_download_benchmark.stats import RequestResult
+
 CHUNK_SIZE = 64 * 1024
 
 
@@ -19,8 +21,8 @@ class DownloadError(Exception):
     """A Request failed; the Run aborts immediately (no retries)."""
 
 
-def fetch_once(url: str, timeout: float) -> tuple[float, int]:
-    """Perform one Request; return (request_time_seconds, downloaded_bytes).
+def fetch_once(url: str, timeout: float) -> RequestResult:
+    """Perform one Request; return its Request Time and Downloaded Bytes.
 
     Per ADR-0002: each call opens a fresh connection (urllib never reuses
     connections), so DNS + TCP + TLS setup is included in the measured time;
@@ -72,4 +74,7 @@ def fetch_once(url: str, timeout: float) -> tuple[float, int]:
         # non-numeric port). No legitimate ValueError can come from the
         # calls above otherwise.
         raise DownloadError(str(error)) from error
-    return time.perf_counter() - start, downloaded_bytes
+    return RequestResult(
+        request_time=time.perf_counter() - start,
+        downloaded_bytes=downloaded_bytes,
+    )
