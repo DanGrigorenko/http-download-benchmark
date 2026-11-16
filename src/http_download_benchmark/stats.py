@@ -4,6 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import NamedTuple
+
+
+class RequestResult(NamedTuple):
+    """One completed Request's measurement: Request Time and Downloaded Bytes."""
+
+    request_time: float
+    downloaded_bytes: int
 
 
 def mean(values: Sequence[float]) -> float:
@@ -20,26 +28,23 @@ class Summary:
     requests_completed: int
     average_request_time: float
     total_downloaded_bytes: int
-    total_request_time: float
     download_speed_bytes_per_second: float
 
 
-def summarize(request_times: Sequence[float], downloaded_bytes: Sequence[int]) -> Summary:
+def summarize(results: Sequence[RequestResult]) -> Summary:
     """Aggregate per-Request measurements into a Run Summary.
 
-    ``request_times`` and ``downloaded_bytes`` must be parallel sequences
-    (one entry per completed Request). Download Speed is aggregate throughput:
-    total Downloaded Bytes divided by the sum of Request Times (ADR-0002),
-    never the mean of per-request speeds.
+    Download Speed is aggregate throughput: total Downloaded Bytes divided
+    by the sum of Request Times (ADR-0002), never the mean of per-request
+    speeds.
     """
-    total_request_time = sum(request_times)
-    total_downloaded_bytes = sum(downloaded_bytes)
+    total_request_time = sum(result.request_time for result in results)
+    total_downloaded_bytes = sum(result.downloaded_bytes for result in results)
     # Zero-safe: an empty Run (or all-zero timings) yields 0.0, not a division error.
     speed = total_downloaded_bytes / total_request_time if total_request_time else 0.0
     return Summary(
-        requests_completed=len(request_times),
-        average_request_time=mean(request_times),
+        requests_completed=len(results),
+        average_request_time=mean([result.request_time for result in results]),
         total_downloaded_bytes=total_downloaded_bytes,
-        total_request_time=total_request_time,
         download_speed_bytes_per_second=speed,
     )

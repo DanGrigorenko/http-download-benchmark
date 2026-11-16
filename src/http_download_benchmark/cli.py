@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from http_download_benchmark import __version__
 from http_download_benchmark.downloader import DownloadError, fetch_once
 from http_download_benchmark.formatting import format_duration, format_size, format_speed
-from http_download_benchmark.stats import summarize
+from http_download_benchmark.stats import RequestResult, summarize
 
 DEFAULT_REQUESTS = 10
 DEFAULT_TIMEOUT_SECONDS = 30.0
@@ -85,25 +85,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     timeout: float = args.timeout
 
     print(f"Benchmarking {url} with {requests_total} sequential requests", flush=True)
-    request_times: list[float] = []
-    downloaded_byte_counts: list[int] = []
+    results: list[RequestResult] = []
     for index in range(1, requests_total + 1):
         try:
-            request_time, downloaded_bytes = fetch_once(url, timeout)
+            result = fetch_once(url, timeout)
         except DownloadError as error:
             print(f"Request {index} failed: {error}", file=sys.stderr)
             return 1
-        request_times.append(request_time)
-        downloaded_byte_counts.append(downloaded_bytes)
+        results.append(result)
         # Zero-safe instantaneous speed for pathologically fast tiny responses.
-        instantaneous_speed = downloaded_bytes / request_time if request_time else 0.0
+        instantaneous_speed = (
+            result.downloaded_bytes / result.request_time if result.request_time else 0.0
+        )
         print(
-            f"Request {index}/{requests_total}: {format_duration(request_time)} | "
-            f"{format_size(downloaded_bytes)} | {format_speed(instantaneous_speed)}",
+            f"Request {index}/{requests_total}: {format_duration(result.request_time)} | "
+            f"{format_size(result.downloaded_bytes)} | {format_speed(instantaneous_speed)}",
             flush=True,
         )
 
-    summary = summarize(request_times, downloaded_byte_counts)
+    summary = summarize(results)
     print()
     print("Summary:")
     print(f"  Requests completed:     {summary.requests_completed}")
