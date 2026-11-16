@@ -13,3 +13,9 @@ The five canonical triage roles use their default label strings: `needs-triage`,
 ### Domain docs
 
 Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Branches
+
+- `develop` is the active development branch — branch from it for new work.
+- `master` holds the stable version of the project and is updated from `develop`.
+- Both are protected: force pushes and deletions are blocked.
