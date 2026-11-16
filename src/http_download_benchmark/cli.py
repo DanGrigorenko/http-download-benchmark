@@ -84,7 +84,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     requests_total: int = args.requests
     timeout: float = args.timeout
 
-    print(f"Benchmarking {url} with {requests_total} sequential requests")
+    print(f"Benchmarking {url} with {requests_total} sequential requests", flush=True)
     request_times: list[float] = []
     downloaded_byte_counts: list[int] = []
     for index in range(1, requests_total + 1):

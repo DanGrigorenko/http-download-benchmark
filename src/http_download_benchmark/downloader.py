@@ -24,8 +24,8 @@ def fetch_once(url: str, timeout: float) -> tuple[float, int]:
     Per ADR-0002: each call opens a fresh connection (urllib never reuses
     connections), so DNS + TCP + TLS setup is included in the measured time;
     redirects are followed automatically with the whole chain counted in the
-    Request Time and only the final body counted in the bytes; no
-    Accept-Encoding header is sent, so payload bytes equal wire bytes. The
+    Request Time and only the final body counted in the bytes; the request
+    demands an uncompressed response, so payload bytes equal wire bytes. The
     body is read in fixed 64 KiB chunks and timed with time.perf_counter(),
     a monotonic high-resolution clock, from just before the connection opens
     until the last byte is read.
@@ -37,7 +37,11 @@ def fetch_once(url: str, timeout: float) -> tuple[float, int]:
     Raises DownloadError on any failure (non-2xx status, timeout, connection
     error).
     """
-    request = Request(url)
+    # "identity" forbids any transfer/content coding, which is what keeps
+    # Downloaded Bytes equal to wire bytes. http.client would send exactly
+    # this header anyway (putrequest injects it when absent); setting it
+    # explicitly makes the measurement decision visible in this codebase.
+    request = Request(url, headers={"Accept-Encoding": "identity"})
     start = time.perf_counter()
     try:
         with urlopen(request, timeout=timeout) as response:
