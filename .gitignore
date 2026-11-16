@@ -1,0 +1,24 @@
+# Local virtualenv (dev tooling only; never shipped)
+.venv/
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+coverage.xml
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
