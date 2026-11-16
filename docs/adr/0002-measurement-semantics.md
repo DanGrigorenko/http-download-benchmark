@@ -1,6 +1,6 @@
 # Measurement semantics: independent requests, aggregate throughput
 
-Each measured Request opens a fresh connection (DNS + TCP + TLS setup included in Request Time) and no warm-up request is performed, so a Run reports exactly what a user downloading the URL N times from scratch experiences. Download Speed is total Downloaded Bytes divided by the sum of Request Times (not the mean of per-request speeds), and no `Accept-Encoding` header is sent, so servers respond uncompressed and payload bytes equal wire bytes.
+Each measured Request opens a fresh connection (DNS + TCP + TLS setup included in Request Time) and no warm-up request is performed, so a Run reports exactly what a user downloading the URL N times from scratch experiences. Download Speed is total Downloaded Bytes divided by the sum of Request Times (not the mean of per-request speeds), and the client explicitly sends `Accept-Encoding: identity` — stdlib `http.client` injects exactly this header even when the caller omits it, so demanding it explicitly is how the uncompressed-response guarantee is actually enforced — so servers respond uncompressed and payload bytes equal wire bytes.
 
 ## Consequences
 
