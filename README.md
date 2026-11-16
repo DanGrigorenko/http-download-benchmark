@@ -110,7 +110,7 @@ Exit codes:
 | Code | Meaning |
 | --- | --- |
 | `0` | the Run completed; summary printed |
-| `1` | a Request failed (non-2xx status, timeout, connection error) — stderr names the failing request, e.g. `Request 3 failed: HTTP 404 File not found`; no retries, no partial summary |
+| `1` | a Request failed (non-2xx status, timeout, connection error, invalid URL) — stderr names the failing request, e.g. `Request 3 failed: HTTP 404 File not found`; no retries, no partial summary |
 | `2` | argument error (missing URL, non-`http(s)://` URL, non-positive `--requests`/`--timeout`) |
 
 ## Example output
@@ -184,8 +184,8 @@ What the numbers mean — defined precisely in
   a legitimately slow large download is only killed when one operation
   stalls.
 - **Fail fast.** The first failed Request (non-2xx, timeout, connection
-  error) aborts the Run with a stderr message naming the request index; no
-  retries, no partial results.
+  error, invalid URL) aborts the Run with a stderr message naming the request
+  index; no retries, no partial results.
 - Timing uses a monotonic high-resolution clock from just before the
   connection opens until the last body byte is read; the body is read in
   fixed 64 KiB chunks with bytes counted as they arrive.

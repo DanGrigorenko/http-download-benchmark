@@ -8,6 +8,7 @@ test and the local end-to-end check.
 from __future__ import annotations
 
 import time
+from http.client import InvalidURL
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -35,15 +36,18 @@ def fetch_once(url: str, timeout: float) -> tuple[float, int]:
     legitimately slow large download is only killed if one operation stalls.
 
     Raises DownloadError on any failure (non-2xx status, timeout, connection
-    error).
+    error, invalid URL).
     """
-    # "identity" forbids any transfer/content coding, which is what keeps
-    # Downloaded Bytes equal to wire bytes. http.client would send exactly
-    # this header anyway (putrequest injects it when absent); setting it
-    # explicitly makes the measurement decision visible in this codebase.
-    request = Request(url, headers={"Accept-Encoding": "identity"})
-    start = time.perf_counter()
     try:
+        # "identity" forbids any transfer/content coding, which is what keeps
+        # Downloaded Bytes equal to wire bytes. http.client would send exactly
+        # this header anyway (putrequest injects it when absent); setting it
+        # explicitly makes the measurement decision visible in this codebase.
+        # Request() construction itself parses the URL, so malformed URLs
+        # (e.g. an unterminated IPv6 literal) fail here, before any timing
+        # starts or connection is attempted.
+        request = Request(url, headers={"Accept-Encoding": "identity"})
+        start = time.perf_counter()
         with urlopen(request, timeout=timeout) as response:
             downloaded_bytes = 0
             while True:
@@ -60,5 +64,12 @@ def fetch_once(url: str, timeout: float) -> tuple[float, int]:
     except OSError as error:
         # Anything raised by the socket itself, including timeouts mid-body
         # (socket.timeout/TimeoutError) and connection resets.
+        raise DownloadError(str(error)) from error
+    except (ValueError, InvalidURL) as error:
+        # Malformed URLs rejected before any connection is attempted:
+        # urllib.parse raises ValueError (e.g. "Invalid IPv6 URL" for
+        # "http://[::1/f"), http.client raises InvalidURL (e.g. for a
+        # non-numeric port). No legitimate ValueError can come from the
+        # calls above otherwise.
         raise DownloadError(str(error)) from error
     return time.perf_counter() - start, downloaded_bytes

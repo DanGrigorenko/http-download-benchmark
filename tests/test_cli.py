@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from http_download_benchmark.cli import parse_args
+from http_download_benchmark.cli import main, parse_args
 
 
 def test_url_only_uses_defaults() -> None:
@@ -70,6 +70,26 @@ def test_non_http_url_rejected_upfront(url: str, capsys: pytest.CaptureFixture[s
     stderr = capsys.readouterr().err
     assert "http" in stderr
     assert url in stderr
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://[::1/f",  # unterminated IPv6 literal: urllib.parse raises ValueError
+        "http://example.com:port/",  # non-numeric port: http.client raises InvalidURL
+        "http:///path",  # no host: urllib wraps the failure in URLError
+    ],
+)
+def test_invalid_url_aborts_run_naming_request_1(
+    url: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # All three forms are rejected before any connection is attempted, so
+    # this exercises the fail-fast contract without touching the network.
+    exit_code = main([url])
+
+    assert exit_code == 1
+    stderr = capsys.readouterr().err
+    assert "Request 1 failed:" in stderr
 
 
 def test_version_flag_prints_version_and_exits_zero(capsys: pytest.CaptureFixture[str]) -> None:
