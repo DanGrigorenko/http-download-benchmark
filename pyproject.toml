@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "http-download-benchmark"
+description = "CLI benchmark that measures HTTP download speed with sequential full downloads, stdlib only."
+requires-python = ">=3.9"
+authors = [{ name = "http-download-benchmark maintainers" }]
+keywords = ["http", "benchmark", "download", "speed", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Benchmark",
+    "Typing :: Typed",
+]
+dependencies = []
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[project.scripts]
+http-download-benchmark = "http_download_benchmark.cli:main"
+
+[tool.hatch.version]
+path = "src/http_download_benchmark/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/http_download_benchmark"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+]
+
+[tool.mypy]
+# The package itself supports Python 3.9+ (enforced by ruff target-version and
+# the CI test matrix); mypy >= 2.0 no longer offers a 3.9 target, so type
+# checking targets 3.10.
+python_version = "3.10"
+strict = true
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
