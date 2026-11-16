@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Issues are tracked as GitLab issues via the `glab` CLI. See `docs/agents/issue-tracker.md`.
+Issues are tracked as GitHub issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
