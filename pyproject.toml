@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "http-download-benchmark"
 description = "CLI benchmark that measures HTTP download speed with sequential full downloads, stdlib only."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.9"
 authors = [{ name = "http-download-benchmark maintainers" }]
 keywords = ["http", "benchmark", "download", "speed", "cli"]
