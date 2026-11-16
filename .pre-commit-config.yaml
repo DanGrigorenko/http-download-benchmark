@@ -1,0 +1,35 @@
+# Pre-commit hooks mirroring the CI quality gates (.github/workflows/ci.yml):
+# ruff lint, ruff format, and strict mypy. All configuration (rule selection,
+# line length, strictness, which files are checked) lives in pyproject.toml,
+# so these hooks enforce exactly what CI enforces.
+#
+# Install once:  pip install pre-commit && pre-commit install
+# Run manually:  pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in sync with the ruff resolved by the dev extras (ruff>=0.8);
+    # Dependabot does not update pre-commit hooks, so bump rev on purpose.
+    rev: v0.17.5
+    hooks:
+      - id: ruff
+        name: "ruff lint (CI: ruff check src tests)"
+        # --exit-non-zero-on-fix makes an autofix fail the commit so the
+        # fixed files can be staged, mirroring CI's no-fix check.
+        args: [--exit-non-zero-on-fix]
+      - id: ruff-format
+        name: "ruff format (CI: ruff format --check src tests)"
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    # mypy 2.x, matching what the dev extras (mypy>=1.13) resolve to in CI.
+    rev: v2.4.1
+    hooks:
+      - id: mypy
+        name: "mypy strict (CI: mypy)"
+        # Run plain `mypy`: the file list comes from [tool.mypy] in
+        # pyproject.toml, exactly like the CI step.
+        pass_filenames: false
+        # tests/ import pytest, which mypy needs to see; the package itself
+        # is stdlib-only (ADR-0001), so this is the only extra.
+        additional_dependencies:
+          - pytest>=8.0

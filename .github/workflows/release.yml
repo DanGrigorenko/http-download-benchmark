@@ -1,0 +1,50 @@
+# Release pipeline: a pushed vX.Y.Z tag is gated on the package version,
+# builds the distributions, and publishes a GitHub Release with them attached.
+#
+# The version gate (scripts/check_tag_version.py) reads __version__ from the
+# package source — the same single source hatchling uses — and fails the
+# workflow loudly when the tag drifts from it.
+#
+# NOTE for humans: this workflow can only be verified end to end by pushing a
+# real tag (see the ticket-4 handoff note); agents never push tags.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # required to create the GitHub Release
+
+jobs:
+  release:
+    name: Gate, build, and publish release
+    # ubuntu-24.04, not ubuntu-latest: matches ci.yml and keeps the runner
+    # stable across GitHub image upgrades.
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Verify the tag matches the package version
+        run: python scripts/check_tag_version.py "$GITHUB_REF_NAME"
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Create GitHub Release with the distributions
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

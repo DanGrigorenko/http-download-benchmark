@@ -1,0 +1,15 @@
+# Dependabot: keep the Python dev dependencies (pyproject.toml) and the
+# pinned GitHub Actions versions fresh with weekly update PRs.
+
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
