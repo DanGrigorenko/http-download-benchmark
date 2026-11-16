@@ -13,6 +13,11 @@ build/
 .mypy_cache/
 .ruff_cache/
 
+# Coverage reports
+.coverage
+.coverage.*
+coverage.xml
+
 # Editors / OS
 .idea/
 .vscode/

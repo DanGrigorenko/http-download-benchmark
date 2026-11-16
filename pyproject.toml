@@ -30,8 +30,10 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "pytest-cov>=6.0",
     "ruff>=0.8",
     "mypy>=1.13",
+    "build>=1.2",
 ]
 
 [project.scripts]
