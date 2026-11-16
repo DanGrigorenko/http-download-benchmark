@@ -20,7 +20,9 @@ permissions:
 jobs:
   release:
     name: Gate, build, and publish release
-    runs-on: ubuntu-latest
+    # ubuntu-24.04, not ubuntu-latest: matches ci.yml and keeps the runner
+    # stable across GitHub image upgrades.
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the tagged commit
         uses: actions/checkout@v7
